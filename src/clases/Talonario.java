@@ -12,12 +12,17 @@ package clases;
 public class Talonario {
     private Integer codigo;
     private Integer prefijo;
+    private Integer sucursal;
+    private Integer puntoExpedicion;
 
+    public Talonario() {
+    }
+    
     public Talonario(Integer codigo, Integer prefijo) {
         this.codigo = codigo;
         this.prefijo = prefijo;
     }
-
+    
     public Integer getCodigo() {
         return codigo;
     }
@@ -32,6 +37,22 @@ public class Talonario {
 
     public void setPrefijo(Integer prefijo) {
         this.prefijo = prefijo;
+    }
+
+    public Integer getSucursal() {
+        return sucursal;
+    }
+
+    public void setSucursal(Integer sucursal) {
+        this.sucursal = sucursal;
+    }
+
+    public Integer getPuntoExpedicion() {
+        return puntoExpedicion;
+    }
+
+    public void setPuntoExpedicion(Integer puntoExpedicion) {
+        this.puntoExpedicion = puntoExpedicion;
     }
     
     

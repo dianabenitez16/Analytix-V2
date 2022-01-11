@@ -13,6 +13,7 @@ import java.util.Date;
  */
 public class Factura {
     private Talonario talonario;
+    private Integer tipoComprobante;
     private Integer numero;
     private Cliente cliente;
     private Double total;
@@ -32,6 +33,14 @@ public class Factura {
 
     public void setTalonario(Talonario talonario) {
         this.talonario = talonario;
+    }
+
+    public Integer getTipoComprobante() {
+        return tipoComprobante;
+    }
+
+    public void setTipoComprobante(Integer tipoComprobante) {
+        this.tipoComprobante = tipoComprobante;
     }
 
 

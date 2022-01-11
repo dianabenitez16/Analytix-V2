@@ -8,6 +8,7 @@ package analytix;
 import formularios.comprobantes.CFReimpresion;
 import formularios.informes.ICLibroVenta;
 import formularios.comprobantes.CFVerificador;
+import formularios.tablas.tTimbrados;
 import java.awt.Color;
 import java.beans.PropertyVetoException;
 import java.sql.Connection;
@@ -44,6 +45,7 @@ public class Analytix extends javax.swing.JFrame {
     CFVerificador cfv;
     CFReimpresion cfr;
     ICLibroVenta iclv;
+    tTimbrados tt;
             
     public Analytix() {
         initComponents();
@@ -163,9 +165,11 @@ public class Analytix extends javax.swing.JFrame {
         jMenu2 = new javax.swing.JMenu();
         jMenu4 = new javax.swing.JMenu();
         jMenuItem2 = new javax.swing.JMenuItem();
+        jMenu5 = new javax.swing.JMenu();
+        jMenuItem4 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Analytix - Discovery");
+        setTitle("Analytix 2022 - Discovery");
         setMinimumSize(new java.awt.Dimension(640, 480));
 
         javax.swing.GroupLayout dpLayout = new javax.swing.GroupLayout(dp);
@@ -260,6 +264,18 @@ public class Analytix extends javax.swing.JFrame {
 
         menu.add(jMenu2);
 
+        jMenu5.setText("Tablas");
+
+        jMenuItem4.setText("Timbrados");
+        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem4ActionPerformed(evt);
+            }
+        });
+        jMenu5.add(jMenuItem4);
+
+        menu.add(jMenu5);
+
         setJMenuBar(menu);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -296,6 +312,11 @@ public class Analytix extends javax.swing.JFrame {
         cfr = new CFReimpresion();
         agregar(cfr);
     }//GEN-LAST:event_jMenuItem3ActionPerformed
+
+    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
+        tt = new tTimbrados();
+        agregar(tt);
+    }//GEN-LAST:event_jMenuItem4ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -344,9 +365,11 @@ public class Analytix extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
+    private javax.swing.JMenu jMenu5;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
+    private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JMenuBar menu;
     // End of variables declaration//GEN-END:variables
 }

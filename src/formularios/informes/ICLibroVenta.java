@@ -113,6 +113,7 @@ public class ICLibroVenta extends javax.swing.JInternalFrame implements java.bea
         if(tipoReporte.getSelectedIndex() == 0){
             
             query = esRestaurante ?  
+                    // SI ES RESTAURANTE (CALCULA Y MANIPULA LA INFORMACION PARA DECLARAR CON 50% DEL IVA.
                     "SELECT  "
                 + "'I' as ven_tipimp, 0 as ven_gra05,0 as ven_iva05,'' as ven_disg05, '' as cta_iva05, '' as ven_rubgra, '' as ven_rubg05, '' as ven_disexe, "
                 + "CONCAT(CONVERT(nro_suc,SQL_VARCHAR),CONCAT('-',CONVERT(mov_nro,SQL_VARCHAR))) AS ven_numero, "
@@ -122,10 +123,11 @@ public class ICLibroVenta extends javax.swing.JInternalFrame implements java.bea
                 + "mov_vto as ven_fecven, 0 as cant_dias, "
                 + "'LI' as origen, 0 as cambio, mov_can as valor, '' as moneda, 0 as exen_dolar, '' as concepto, '' as cta_iva, '' as cta_caja, "
                 + "0 as tkdesde, 0 as tkhasta, mov_caj as caja, '' as ven_disgra, 1 as forma_devo, "
-                + "'' as ven_cuense, mov_anu as anular, '' as reproceso, '' as cuenta_exe, '' as usu_ide ,'' as timbrado,tmp_cui, tmp_nom, 'last_col' as last_col "
+                + "'' as ven_cuense, mov_anu as anular, '' as reproceso, '' as cuenta_exe, '' as usu_ide , '' as timbrado, '' as clieasi, '' as ventirptip, '' as ventirpgra, '' as ventirpexe, tmp_cui, tmp_nom, 'last_col' as last_col "
                 + " "
                 + "FROM COMPROBANTES_VENTAS_ENCABEZADOS INNER JOIN TALONARIOS ON mov_tal = nro_nro LEFT OUTER JOIN CLIENTES ON mov_cli = cli_cod LEFT OUTER JOIN CLIENTES_OCASIONALES ON mov_tmp = tmp_cod "
                 + "WHERE mov_tip <> 80 AND mov_tip <> 88 AND nro_nro IN ("+talonariosfactura+","+talonariosncr+","+talonariosrecibo+") " :
+                    // SI NO ES RESTAURANTE
                     "SELECT  "
                 + "'I' as ven_tipimp, 0 as ven_gra05,0 as ven_iva05,'' as ven_disg05, '' as cta_iva05, '' as ven_rubgra, '' as ven_rubg05, '' as ven_disexe, "
                 + "CONCAT(CONVERT(nro_suc,SQL_VARCHAR),CONCAT('-',CONVERT(mov_nro,SQL_VARCHAR))) AS ven_numero, "
@@ -135,22 +137,10 @@ public class ICLibroVenta extends javax.swing.JInternalFrame implements java.bea
                 + "mov_vto as ven_fecven, 0 as cant_dias, "
                 + "'LI' as origen, 0 as cambio, mov_can as valor, '' as moneda, 0 as exen_dolar, '' as concepto, '' as cta_iva, '' as cta_caja, "
                 + "0 as tkdesde, 0 as tkhasta, mov_caj as caja, '' as ven_disgra, 1 as forma_devo, "
-                + "'' as ven_cuense, mov_anu as anular, '' as reproceso, '' as cuenta_exe, '' as usu_ide,'' as timbrado,tmp_cui, tmp_nom, 'last_col' as last_col "
+                + "'' as ven_cuense, mov_anu as anular, '' as reproceso, '' as cuenta_exe, '' as usu_ide, '1' as timbrado, '2' as clieasi, '3' as ventirptip, '4' as ventirpgra, '5' as ventirpexe, tmp_cui, tmp_nom, 'last_col' as last_col "
                 + " "
                 + "FROM COMPROBANTES_VENTAS_ENCABEZADOS INNER JOIN TALONARIOS ON mov_tal = nro_nro LEFT OUTER JOIN CLIENTES ON mov_cli = cli_cod LEFT OUTER JOIN CLIENTES_OCASIONALES ON mov_tmp = tmp_cod "
                 + "WHERE mov_tip <> 80 AND mov_tip <> 88 AND nro_nro IN ("+talonariosfactura+","+talonariosncr+","+talonariosrecibo+") " ;
-        }else{
-            // hacer codigo para cuando es o no es restaurante
-            query = "SELECT  " +
-                    "'I' as ven_tipimp, 0 as ven_gra05, 0 as ven_iva05, '' as ven_disg05, '' as cta_iva05, '' as ven_rubgra, '' as ven_rubg05, '' as ven_disexe, '' as ven_numero, 0 as ven_imputa, " +
-                    "1 as ven_sucurs, 0 as generar, 'Contado' AS form_pag, '' as ven_centro, '44444401-7' as ven_provee, '' as ven_cuenta, 'IMPORTES CONSOLIDADOS' as ven_prvnom, mov_tal AS ven_tipofa, " +
-                    "mov_fec as ven_fecha, SUM(mov_tot) as ven_totfac, 0 as ven_exenta, SUM(mov_tot-mov_iva) as ven_gravad, SUM(mov_iva) as ven_iva, 0 as ven_retenc, '' as ven_aux, '' as ven_ctrl, " +
-                    "'' as ven_con, 0 as ven_cuota, '' as ven_fecven, 0 as cant_dias, 'LI' as origen, 0 as cambio, 0 as valor, '' as moneda, 0 as exen_dolar, '' as concepto, '' as cta_iva, '' as cta_caja, " +
-                    "0 as tkdesde, 0 as tkhasta, 1 as caja, '' as ven_disgra, 1 as forma_devo, '' as ven_cuense, 0 as anular, '' as reproceso, '' as cuenta_exe, '' as usu_ide, '' as timbrado," +
-                    "nro_suc as Prefijo, MIN(mov_nro) as MinNumero, MAX(mov_nro) as MaxNumero " +
-                    "FROM COMPROBANTES_VENTAS_ENCABEZADOS INNER JOIN TALONARIOS ON mov_tal = nro_nro "
-                    + "WHERE mov_tip <> 80 AND mov_tip <> 88 AND mov_anu = 0 AND nro_nro IN ("+talonariosfactura+","+talonariosncr+", "+talonariosrecibo+") ";
-                
         }
         
         // DOCUMENTACION: https://docs.faircom.com/doc/sqlref/
@@ -236,6 +226,7 @@ public class ICLibroVenta extends javax.swing.JInternalFrame implements java.bea
         jLabel5.setPreferredSize(new java.awt.Dimension(60, 14));
 
         tipoReporte.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Detallado", "Consolidado" }));
+        tipoReporte.setEnabled(false);
         tipoReporte.setPreferredSize(new java.awt.Dimension(140, 25));
 
         javax.swing.GroupLayout pBusquedaLayout = new javax.swing.GroupLayout(pBusqueda);
@@ -498,10 +489,6 @@ public class ICLibroVenta extends javax.swing.JInternalFrame implements java.bea
                             
                             //XLibroVentaDetallado xlv = new XLibroVentaDetallado(res);
                             //xlv.addPropertyChangeListener(this);
-                        }else{
-                            XLV.consolidado(res);
-                            XLV.consolidado.addPropertyChangeListener(this);
-                            XLV.consolidado.execute();
                         }
                         
                     } catch (InterruptedException | ExecutionException ex) {

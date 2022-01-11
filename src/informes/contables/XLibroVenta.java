@@ -5,6 +5,8 @@
  */
 package informes.contables;
 
+import clases.Factura;
+import clases.Talonario;
 import clases.Timbrado;
 import java.awt.Desktop;
 import java.io.File;
@@ -19,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
@@ -28,6 +32,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import swing.JColor;
 import system.Consola;
+
 
 /**
  *
@@ -47,12 +52,9 @@ public class XLibroVenta {
     public Object[][] resultados;
     public List<String> encabezados;
     
-    
-    
-    public Timbrado[] timbrado;
+    private List<Timbrado> timbrados;
     
     public Detallado detallado;
-    public Consolidado consolidado;
     
     public int rowNum, colNum, reintentar;
     Row row;
@@ -67,6 +69,7 @@ public class XLibroVenta {
     Boolean exento;
 
     SimpleDateFormat fFecha = new SimpleDateFormat("dd/MM/yyyy");
+    SimpleDateFormat fFechaDB = new SimpleDateFormat("yyyy-MM-dd");
     XSSFWorkbook workbook;
     XSSFSheet sheet;
     
@@ -75,7 +78,21 @@ public class XLibroVenta {
         this.estado = estado;
         this.ultimoMensaje = "";
         
+        cargarTimbrados();
         procesarTalonarios();
+    }
+    
+    private void cargarTimbrados(){
+        //EXTRAER DE LA BD
+        
+        timbrados = new ArrayList<>();
+        try {
+            timbrados.add(new Timbrado(1, "001-001-0260000", "001-001-0299999", "2626262626", fFecha.parse("01/01/2022"), fFecha.parse("31/12/2022")));
+            timbrados.add(new Timbrado(3, "001-001-0030000", "001-001-0039999", "3939393939", fFecha.parse("01/01/2022"), fFecha.parse("31/12/2022")));
+        } catch (ParseException ex) {
+            Logger.getLogger(XLibroVenta.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
     }
     
     private void procesarTalonarios(){
@@ -94,15 +111,7 @@ public class XLibroVenta {
         detallado = new Detallado(res);
     }
     
-    public void consolidado(Object[][] res){
-        fileName = "informes/contables/LibroVentas_consolidado.xlsx";
         
-        workbook = new XSSFWorkbook();
-        sheet = workbook.createSheet("LibroVentasConsolidado");
-    
-        consolidado = new Consolidado(res);
-    }
-    
     public void fin(){
         do{
             reintentar = 1;
@@ -154,7 +163,7 @@ public class XLibroVenta {
         }
 
         @Override
-        protected Void doInBackground() throws ParseException  {
+        protected Void doInBackground()  {
             for (Object[] registro : resultados) {
                 publish("Elaborando informe "+ rowNum*100/resultados.length + "%");
 
@@ -166,13 +175,14 @@ public class XLibroVenta {
                 comprobanteNumero = "";
                 formaDePago = "";
                 exento = false;
-                String timbradonro = "";
+                Factura factura = new Factura();
 
                 for (Object campo : registro) {
                     Cell cell = row.createCell(colNum++);
 
                     if(rowNum == 1){
-                        if(row.getLastCellNum() <=48){
+                        // SE OMITAN LAS COLUMNAS DE LOS CAMPOS TEMPORALES (TMP_RUC, TMP_NOM, LAST_COL, ETC)
+                        if(row.getLastCellNum() <=53){ // Le numera desde 1, y no desde 0.
                             cell.setCellValue((String) campo);
                         }
                     }else{
@@ -189,16 +199,26 @@ public class XLibroVenta {
                                         comprobanteNumero = "0"+comprobanteNumero;
                                     }
                                     
+                                    
+                                    factura.setTalonario(new Talonario());
+                                    factura.setNumero(Integer.valueOf(comprobanteNumero));
                                     // Si el prefijo es tipo 1001,2001,3002, hace lo primero, y si es 0201, 0101, etc, hace lo segundo
                                     if(Integer.valueOf(comprobantePrefijo)>=1000){
                                         cell.setCellValue("00"+comprobantePrefijo.substring(0, 1)+"-"+comprobantePrefijo.substring(1, 4)+"-"+comprobanteNumero);
+                                        factura.getTalonario().setSucursal(Integer.valueOf("00"+comprobantePrefijo.substring(0, 1)));
+                                        factura.getTalonario().setPuntoExpedicion(Integer.valueOf(comprobantePrefijo.substring(1, 4)));
                                     }else{
                                         cell.setCellValue("0"+comprobantePrefijo.substring(0, 2)+"-0"+comprobantePrefijo.substring(2, 4)+"-"+comprobanteNumero);
+                                        factura.getTalonario().setSucursal(Integer.valueOf("0"+comprobantePrefijo.substring(0, 2)));
+                                        factura.getTalonario().setPuntoExpedicion(Integer.valueOf(comprobantePrefijo.substring(2, 4)));
                                     }            
+                                    
                                    
+                                    
+                                    
                                    
                                     // RECORRER ARRAY DE TIMBRADOS Y COMPARAR EN CADA LINEA PARA IDENTIFICAR QUE NUMERO DE TIMBRADO LE CORRESPONDE, SEGUN NUMEORO, TIPO Y FECHA DEL COMPROBANTE
-                                  
+                                    
                                   
                                     
                                 }catch (StringIndexOutOfBoundsException ex){
@@ -233,10 +253,12 @@ public class XLibroVenta {
                                     case 67:
                                     case 77:    
                                         comprobanteTipo = "Nota de crédito";
+                                        factura.setTipoComprobante(3);
                                         break;
                                     case 70:
                                     case 86:    
                                         comprobanteTipo = "Factura";
+                                        factura.setTipoComprobante(1);
                                         break;     
                                     case 82:
                                         comprobanteTipo = "Recibo";
@@ -266,6 +288,19 @@ public class XLibroVenta {
                                 }
                                 cell.setCellValue((Double) campo);
                                 break;
+                            case "ven_fecha": // VERIFICA VENCIMIENTO PARA CUOTAS
+                                System.out.println("entro");
+                                if(campo instanceof Date){
+                                    System.out.println("is a date");
+                                    cell.setCellValue((String) fFecha.format(campo));
+                                    factura.setFecha((Date) campo);
+                                }else{
+                                    System.out.println("is a string");
+                                    cell.setCellValue((String) campo);
+                                }
+                                
+                                break;
+
                             case "ven_fecven": // VERIFICA VENCIMIENTO PARA CUOTAS
                                 if(campo instanceof Date){
                                     cell.getRow().getCell(27).setCellValue(1);
@@ -289,7 +324,29 @@ public class XLibroVenta {
                                     cell.setCellValue((Integer) 1);
                                 }
                                 break;
-                         
+                            case "timbrado":
+                                //System.out.print("NRO:"+cell.getRow().getCell(8).getStringCellValue());
+                                //System.out.print("\tTIPO:"+cell.getRow().getCell(17).getStringCellValue());
+                                //System.out.println("\tFECHA:"+cell.getRow().getCell(18).getStringCellValue());
+                                
+                                for (Timbrado timbrado : timbrados) {
+                                    if(
+                                            factura.getTipoComprobante() == timbrado.getTipoComprobante() &&
+                                            factura.getTalonario().getSucursal() == timbrado.getPrefijoSucursal() &&
+                                            factura.getTalonario().getPuntoExpedicion() == timbrado.getPrefijoPuntoExpedicion() &&
+                                            factura.getNumero() >= timbrado.getNumeroFacturaDesde() &&
+                                            factura.getNumero() <= timbrado.getNumeroFacturaHasta()
+                                            ){
+                                        if(factura.getFecha().compareTo(timbrado.getFechaDesde()) >= 0 && factura.getFecha().compareTo(timbrado.getFechaHasta()) <= 0){
+                                            cell.setCellValue(timbrado.getNumeroTimbrado());
+                                        }
+                                            
+                                    }
+                                }
+                                
+                                
+                                
+                                break;
                             case "usu_ide":
                                 // EN LA ULTIMA COLUMNA, VERIFICAMOS SI ES EXENTA, ENTONCES INSERTAMOS NUMERO DE CUENTA ENXENTA.
                                 if(cell.getRow().getCell(21).getNumericCellValue() == 0){
@@ -303,22 +360,29 @@ public class XLibroVenta {
                                     cell.getRow().getCell(16).setCellValue("IMPORTES CONSOLIDADOS"); 
                                 }
                                 break;
+                            /*
+                            // SE DA DE BAJA PORQUE YA NO ESTA OPERATIVO
                             case "Prefijo":
                             case "MinNumero":
                             case "MaxNumero":
+                                System.out.println("CELDA: \t"+encabezados.get(colNum -1)+"\t"+cell.getColumnIndex());
                                 row.removeCell(cell);
                                 break;
+                            */
                             case "last_col":
-                                if(cell.getRow().getCell(14).getStringCellValue().isEmpty() && !cell.getRow().getCell(48).getStringCellValue().isEmpty()){
-                                    cell.getRow().getCell(14).setCellValue((String) cell.getRow().getCell(48).getStringCellValue()); 
+                                // VERIFICAMOS EL RUC, SI SE TRATA DE UN CLIENTE REGISTRADO O UN CLIENTE TEMPORAL
+                                if(cell.getRow().getCell(14).getStringCellValue().isEmpty() && !cell.getRow().getCell(53).getStringCellValue().isEmpty()){
+                                    cell.getRow().getCell(14).setCellValue((String) cell.getRow().getCell(53).getStringCellValue()); 
                                 }
-                                if(cell.getRow().getCell(16).getStringCellValue().isEmpty() && !cell.getRow().getCell(49).getStringCellValue().isEmpty()){
-                                    cell.getRow().getCell(16).setCellValue((String) cell.getRow().getCell(49).getStringCellValue()); 
+                                // VERIFICAMOS LA RAZON SOCIAL, SI SE TRATA DE UN CLIENTE REGISTRADO O UN CLIENTE TEMPORAL
+                                if(cell.getRow().getCell(16).getStringCellValue().isEmpty() && !cell.getRow().getCell(54).getStringCellValue().isEmpty()){
+                                    cell.getRow().getCell(16).setCellValue((String) cell.getRow().getCell(54).getStringCellValue()); 
                                 }
-                                row.removeCell(row.getCell(48));
-                                row.removeCell(row.getCell(49));
-                                row.removeCell(row.getCell(50));
-                                //row.removeCell(cell);
+                                
+                                // SE ELIMINAN LAS COLUMNAS DE USO TEMPORAL
+                                row.removeCell(row.getCell(53)); // TMP_RUC
+                                row.removeCell(row.getCell(54)); // TMP_NOM
+                                row.removeCell(row.getCell(55)); // LAST_COL
                                 break;
                             default:
                                  if (campo instanceof String) {
@@ -345,168 +409,6 @@ public class XLibroVenta {
             return null;
         }
             
-        @Override
-        protected void done(){
-            publish("Abriendo archivo ...");
-            fin();
-            publish("Listo.");
-        }
-
-        @Override
-        protected void process(List<String> publish){
-            print(publish.get(publish.size()-1));
-        }
-    }
-    
-    
-    public class Consolidado extends SwingWorker<Void, String>{
-        String newFecha, lastFecha;
-        Integer newMinNumero, newMaxNumero, newTipoComp, lastMinNumero, lastMaxNumero, lastTipoComp;
-        
-        public Consolidado(Object[][] res) {
-            resultados = res;
-            encabezados = new ArrayList<>(resultados.length);
-            
-            for (Object cabecera : resultados[0]) {
-                encabezados.add((cabecera.toString()));
-            }
-
-            rowNum = 0;
-            colNum = 0;
-        }
-
-        @Override
-        protected Void doInBackground()  {
-            for (Object[] registro : resultados) {
-                publish("Elaborando informe "+ rowNum*100/resultados.length + "%");
-                
-                row = sheet.createRow(rowNum++);
-
-                colNum = 0;
-                comprobanteTipo = "";
-                comprobantePrefijo = "";
-                comprobanteNumero = "";
-                formaDePago = "";
-                exento = false;
-
-                for (Object campo : registro) {
-                    Cell cell = row.createCell(colNum++);
-
-                    if(rowNum == 1){
-                        if(row.getLastCellNum() <=48){
-                            cell.setCellValue((String) campo);
-                        }
-                    }else{
-                        switch (encabezados.get(colNum -1)){ // SE RESTA 1 POR BUSQUEDA EN ARRAY QUE ARRANCA EN 0
-                            case "ven_numero": // NUMERO DE COMPROBANTE
-
-                                try{
-                                    comprobantePrefijo = registro[encabezados.indexOf("Prefijo")].toString();
-                                    comprobanteNumero = registro[encabezados.indexOf("MinNumero")].toString() + "-" + registro[encabezados.indexOf("MaxNumero")].toString();
-
-                                    if(comprobantePrefijo.equals("0")){
-                                        comprobantePrefijo = "0000";
-                                    }
-                                    while(comprobanteNumero.length() < 8){
-                                        comprobanteNumero = "0"+comprobanteNumero;
-                                    }
-
-                                    //cell.setCellValue("00"+comprobantePrefijo.substring(0, 1)+"-"+comprobantePrefijo.substring(1, 4)+"-"+comprobanteNumero);
-                                    cell.setCellValue(comprobantePrefijo.substring(0, 1)+"-"+comprobanteNumero);
-                                }catch (StringIndexOutOfBoundsException ex){
-                                    System.out.println("Error: "+ex);
-                                    System.out.println("Prefijo: "+comprobantePrefijo + "  Numero: "+comprobanteNumero);
-                                }
-
-                                break;
-                            case "ven_sucurs":
-                                cell.setCellValue("0"+comprobantePrefijo.substring(0, 1));
-                                break;
-                            case "form_pag": // MEDIO DE PAGO
-                                formaDePago = (String) campo;
-                                cell.setCellValue((String) formaDePago);
-                                break;
-                            case "ven_tipofa": //TIPO DE COMPROBANTE (CREDITO/CONTADO)
-                                if(Arrays.asList(talonariosncr).contains(campo.toString())){ 
-                                        comprobanteTipo = "Nota de Crédito";
-                                }else{
-                                        comprobanteTipo = "Contado";
-                                }
-                                cell.setCellValue((String) comprobanteTipo);
-                                break;
-                            case "ven_iva": // VERIFICA IVA PARA EXENTO
-                                if((Double) campo == 0){
-                                    cell.getRow().getCell(20).setCellValue(cell.getRow().getCell(21).getNumericCellValue());
-                                    cell.getRow().getCell(21).setCellValue(0);
-                                }else{
-                                    cell.getRow().getCell(15).setCellValue(configuracion.getProperty("cuentaventas10"));
-                                }
-                                cell.setCellValue((Double) campo);
-                                break;
-                            case "ven_fecven": // VERIFICA VENCIMIENTO PARA CUOTAS
-                                if(campo instanceof Date){
-                                    cell.getRow().getCell(27).setCellValue(1);
-                                    cell.setCellValue((String) fFecha.format(campo));
-                                }else{
-                                    cell.setCellValue((String) campo);
-                                }
-                                break;
-                            case "forma_devo": // VERIFICA ANULACION
-                                if(comprobanteTipo.equals("Nota de Crédito")){
-                                    cell.setCellValue(1);
-                                }else{
-                                    cell.setCellValue(0);
-                                }
-                                break;
-                            case "anular": // VERIFICA ANULACION
-                                if((Integer) campo == 0){
-                                    cell.setCellValue((Integer) 0);
-                                }else{
-                                    cell.getRow().getCell(12).setCellValue("Anulado");
-                                    cell.setCellValue((Integer) 1);
-                                }
-                                break;
-                            case "usu_ide": 
-                                // EN LA ULTIMA COLUMNA, VERIFICAMOS SI ES EXENTA, ENTONCES INSERTAMOS NUMERO DE CUENTA ENXENTA.
-                                if(cell.getRow().getCell(21).getNumericCellValue() == 0){
-                                    cell.getRow().getCell(46).setCellValue(configuracion.getProperty("cuentaventasexe"));
-                                    cell.getRow().getCell(14).setCellValue("77777701-0"); 
-                                    cell.getRow().getCell(16).setCellValue("AGENTES DIPLOMATICOS"); 
-                                }
-                                break;
-                            case "Prefijo":
-                            case "MinNumero":
-                            case "MaxNumero":
-                            case "tmp_nom":
-                            case "tmp_cui":
-                                row.removeCell(cell);
-                                break;
-                            default:
-                                 if (campo instanceof String) {
-                                    cell.setCellValue((String) campo);
-                                } else if (campo instanceof Integer) {
-                                    cell.setCellValue((Integer) campo);
-                                } else if (campo instanceof Date) {
-                                    cell.setCellValue((String) fFecha.format(campo));
-                                } else if (campo instanceof Double) {
-                                    cell.setCellValue((Double) campo);
-                                } else {
-                                    cell.setCellValue((String) campo);
-                                }
-                        }
-                    }
-
-                }
-
-                if(formaDePago.equals("") && rowNum >1){
-                    sheet.removeRow(row);
-                    rowNum--;
-                }
-            }
-            return null;
-        }
-
-        
         @Override
         protected void done(){
             publish("Abriendo archivo ...");
