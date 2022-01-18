@@ -105,9 +105,13 @@ public class XLibroVenta {
               timbrado.setPrefijoPuntoExpedicion(rs.getInt("punto_exp"));
               timbrado.setNumeroDesde(rs.getInt(4));
               timbrado.setNumeroDesde(rs.getInt(5));
-              timbrado.setFechaDesde(rs.getDate(6));
-              timbrado.setFechaHasta(rs.getDate(7));
+              timbrado.setFechaDesde(fFechaDB.parse(rs.getString("fecha_des")));
+              timbrado.setFechaHasta(fFechaDB.parse(rs.getString("fecha_has")));
+//              timbrado.setFechaDesde(rs.getDate(6));
+//              timbrado.setFechaHasta(rs.getDate(7));
               timbrado.setNumeroTimbrado(rs.getInt(8));
+              
+              System.out.println("RS:"+rs.toString());
         //     fFecha.format(timbrado.getFechaDesde());
         //     fFecha.format(timbrado.getFechaHasta());
               System.out.print("NUMERO DESDE " + timbrado.getNumeroDesde());
@@ -120,7 +124,9 @@ public class XLibroVenta {
              }
       } catch (SQLException ex) {
           Logger.getLogger(XLibroVenta.class.getName()).log(Level.SEVERE, null, ex);
-      }
+      } catch (ParseException ex) {
+            Logger.getLogger(XLibroVenta.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     private void procesarTalonarios(){
         talonariosncr = configuracion.getProperty("talonariosncr").split(",");
