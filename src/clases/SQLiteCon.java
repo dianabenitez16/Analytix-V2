@@ -7,9 +7,11 @@ package clases;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 /**
  *
@@ -20,47 +22,100 @@ public class SQLiteCon {
   
     public SQLiteCon() {
         conectar();
+        crearTabla();
+   
+        
+    //  insertar();
     }
     
       public Connection conectar(){
-Connection c = null;
+          
+        Connection c = null;
       
-      try {
-         Class.forName("org.sqlite.JDBC");
-         c = DriverManager.getConnection("jdbc:sqlite:Analytix.db");
-      } catch ( Exception e ) {
-         System.err.println( e.getClass().getName() + ": " + e.getMessage() );
-         System.exit(0);
-      }
-      
-      System.out.println("Opened database susssssssccessfully");
-        return c;
+                    try {
+                       Class.forName("org.sqlite.JDBC");
+                       c = DriverManager.getConnection("jdbc:sqlite:Analytix.db");
+                    } catch ( Exception e ) {
+                       System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+                       System.exit(0);
+                    }
+
+                    System.out.println("Opened database successfully");
+                      return c;
         
-      }/*
-          public static void main(String[] args) {
-       Connection c = null;
-      Statement stmt = null;
-      boolean hasdata = false;
-      try {
-         Class.forName("org.sqlite.JDBC");
-         c = DriverManager.getConnection("jdbc:sqlite:Analytix.db");
-         System.out.println("Opened database successfully");
-
-         stmt = c.createStatement();
-         String sql = "INSERT INTO TALONARIOS VALUES('RECIBO', 1, '1', '123456789','987654321','1/2/3','3/2/1','123456789');";
-                    
-         stmt.executeUpdate(sql);
-         hasdata = true;
-
-      } catch ( Exception e ) {
-         System.err.println( e.getClass().getName() + ": " + e.getMessage() );
-         System.exit(0);
       }
-      System.out.println("Table created successfully");  // TODO code application logic here
-    }
-      */
-}
+      
+      public void crearTabla(){
+          
+      Connection c = null;
+      Statement stmt = null;
+  //    boolean hasdata = false;
+         try {
+                Class.forName("org.sqlite.JDBC");
+                c = DriverManager.getConnection("jdbc:sqlite:Analytix.db");
+                System.out.println("Opened database successfully");
 
+                stmt = c.createStatement();
+                String sql = "CREATE TABLE IF NOT EXISTS TALONARIOS " +
+                                "(tipo_com int , " +
+                                "sucursal VARCHAR(20), "+
+                                "punto_exp VARCHAR(20), " +
+                                "nro_desde INTEGER, " +
+                                "nro_hasta INTEGER, " +
+                                "fecha_des DATE, " +
+                                "fecha_has DATE, " +
+                                "timbrado INTEGER, "
+                        + "FOREIGN KEY (tipo_com) REFERENCES comprobantes(id))";
+                                
+                String sqln = "CREATE TABLE IF NOT EXISTS COMPROBANTES (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, descripcion varchar(20));";          
+                stmt.executeUpdate(sqln);
+                stmt.executeUpdate(sql);
+           //     hasdata = true;
+                 stmt.close();
+                  c.close();
+             } catch ( Exception e ) {
+                System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+                System.exit(0);
+             }
+      System.out.println("Table created successfully"); 
+      
+      }
+        /*
+      public void insertar(){
+          
+      Connection c = null;
+      Statement stmt = null;
+  //    boolean hasdata = false;
+         try {
+                Class.forName("org.sqlite.JDBC");
+                c = DriverManager.getConnection("jdbc:sqlite:Analytix.db");
+                System.out.println("Opened database successfully");
+
+                stmt = c.createStatement();
+                String sql = "INSERT INTO talonarios VALUES (2, 2,2, 123456,132465, 2020-03-21, 2020-03-22, 12345)";
+                                
+             
+                stmt.executeUpdate(sql);
+           //     hasdata = true;
+                 stmt.close();
+                  c.close();
+             } catch ( Exception e ) {
+                System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+                System.exit(0);
+             }
+      System.out.println("RECORDS created successfully"); 
+      
+
+    
+}
+  
+*/
+     
+          public static void main(String[] args) {
+ 
+
+}
+}
 
 
 
@@ -150,6 +205,4 @@ public void creartabla(){
       System.out.println("Table created successfully");
    }
 */
-
-
  

@@ -30,13 +30,13 @@ public class Timbrado {
     **/
     
     private Integer tipoComprobante;
-    private String numeroDesde;
-    private String numeroHasta;
+    private Integer numeroDesde;
+    private Integer numeroHasta;
     private Integer prefijoSucursal;
     private Integer prefijoPuntoExpedicion;
     private Integer numeroFacturaDesde;
     private Integer numeroFacturaHasta;
-    private String numeroTimbrado;
+    private Integer numeroTimbrado;
     private Date fechaDesde;
     private Date fechaHasta;
 
@@ -44,7 +44,7 @@ public class Timbrado {
         
     }
 
-    public Timbrado(Integer tipoComprobante, String numeroDesde, String numeroHasta, String numeroTimbrado, Date fechaDesde, Date fechaHasta) {
+    public Timbrado(Integer tipoComprobante, Integer numeroDesde, Integer numeroHasta, Integer numeroTimbrado, Date fechaDesde, Date fechaHasta) {
         this.tipoComprobante = tipoComprobante;
         this.numeroDesde = numeroDesde;
         this.numeroHasta = numeroHasta;
@@ -52,16 +52,16 @@ public class Timbrado {
         this.fechaDesde = fechaDesde;
         this.fechaHasta = fechaHasta;
         
-        descomponerNumeros();
+  //      descomponerNumeros();
     }
-    
+   /* 
     public void descomponerNumeros(){
         prefijoSucursal = Integer.valueOf(numeroDesde.split("-")[0]);
         prefijoPuntoExpedicion = Integer.valueOf(numeroDesde.split("-")[1]);
         numeroFacturaDesde = Integer.valueOf(numeroDesde.split("-")[2]);
         numeroFacturaHasta = Integer.valueOf(numeroHasta.split("-")[2]);
     }
-
+*/
     public Integer getTipoComprobante() {
         return tipoComprobante;
     }
@@ -70,19 +70,19 @@ public class Timbrado {
         this.tipoComprobante = tipoComprobante;
     }
 
-    public String getNumeroDesde() {
+    public Integer getNumeroDesde() {
         return numeroDesde;
     }
 
-    public void setNumeroDesde(String numeroDesde) {
+    public void setNumeroDesde(Integer numeroDesde) {
         this.numeroDesde = numeroDesde;
     }
 
-    public String getNumeroHasta() {
+    public Integer getNumeroHasta() {
         return numeroHasta;
     }
 
-    public void setNumeroHasta(String numeroHasta) {
+    public void setNumeroHasta(Integer numeroHasta) {
         this.numeroHasta = numeroHasta;
     }
 
@@ -120,11 +120,11 @@ public class Timbrado {
         this.numeroFacturaHasta = numeroFacturaHasta;
     }
 
-    public String getNumeroTimbrado() {
+    public Integer getNumeroTimbrado() {
         return numeroTimbrado;
     }
 
-    public void setNumeroTimbrado(String numeroTimbrado) {
+    public void setNumeroTimbrado(Integer numeroTimbrado) {
         this.numeroTimbrado = numeroTimbrado;
     }
 

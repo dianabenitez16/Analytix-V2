@@ -6,6 +6,7 @@
 package informes.contables;
 
 import clases.Factura;
+import clases.SQLiteCon;
 import clases.Talonario;
 import clases.Timbrado;
 import java.awt.Desktop;
@@ -14,6 +15,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -78,23 +82,46 @@ public class XLibroVenta {
         this.estado = estado;
         this.ultimoMensaje = "";
         
-        cargarTimbrados();
+       
         procesarTalonarios();
     }
     
     private void cargarTimbrados(){
-        //EXTRAER DE LA BD
         
-        timbrados = new ArrayList<>();
-        try {
-            timbrados.add(new Timbrado(1, "001-001-0260000", "001-001-0299999", "2626262626", fFecha.parse("01/01/2022"), fFecha.parse("31/12/2022")));
-            timbrados.add(new Timbrado(3, "001-001-0030000", "001-001-0039999", "3939393939", fFecha.parse("01/01/2022"), fFecha.parse("31/12/2022")));
-        } catch (ParseException ex) {
-            Logger.getLogger(XLibroVenta.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
+        SQLiteCon lite = new SQLiteCon();
+        lite.conectar();
+        String sql = "select * from talonarios";
+       
+      try {
+             Statement st= lite.conectar().createStatement();
+             ResultSet rs= st.executeQuery(sql);
+
+             while(rs.next()) {
+              
+              Timbrado timbrado = new Timbrado();
+              
+              timbrado.setTipoComprobante(rs.getInt("tipo_com"));
+              timbrado.setPrefijoSucursal(rs.getInt("sucursal"));
+              timbrado.setPrefijoPuntoExpedicion(rs.getInt("punto_exp"));
+              timbrado.setNumeroDesde(rs.getInt(4));
+              timbrado.setNumeroDesde(rs.getInt(5));
+              timbrado.setFechaDesde(rs.getDate(6));
+              timbrado.setFechaHasta(rs.getDate(7));
+              timbrado.setNumeroTimbrado(rs.getInt(8));
+        //     fFecha.format(timbrado.getFechaDesde());
+        //     fFecha.format(timbrado.getFechaHasta());
+              System.out.print("NUMERO DESDE " + timbrado.getNumeroDesde());
+              System.out.print("NUMERO HASTA " + timbrado.getNumeroHasta());
+         
+              timbrados = new ArrayList<>();
+              timbrados.add(timbrado);
+              
+      
+             }
+      } catch (SQLException ex) {
+          Logger.getLogger(XLibroVenta.class.getName()).log(Level.SEVERE, null, ex);
+      }
     }
-    
     private void procesarTalonarios(){
         talonariosncr = configuracion.getProperty("talonariosncr").split(",");
         importesconsolidados = configuracion.getProperty("importesconsolidados").split(",");
@@ -328,7 +355,7 @@ public class XLibroVenta {
                                 //System.out.print("NRO:"+cell.getRow().getCell(8).getStringCellValue());
                                 //System.out.print("\tTIPO:"+cell.getRow().getCell(17).getStringCellValue());
                                 //System.out.println("\tFECHA:"+cell.getRow().getCell(18).getStringCellValue());
-                                
+                                cargarTimbrados();
                                 for (Timbrado timbrado : timbrados) {
                                     if(
                                             factura.getTipoComprobante() == timbrado.getTipoComprobante() &&
@@ -337,7 +364,7 @@ public class XLibroVenta {
                                             factura.getNumero() >= timbrado.getNumeroFacturaDesde() &&
                                             factura.getNumero() <= timbrado.getNumeroFacturaHasta()
                                             ){
-                                        if(factura.getFecha().compareTo(timbrado.getFechaDesde()) >= 0 && factura.getFecha().compareTo(timbrado.getFechaHasta()) <= 0){
+                                        if(fFechaDB.format(factura.getFecha()).compareTo(fFechaDB.format(timbrado.getFechaDesde())) >= 0 && fFechaDB.format(factura.getFecha()).compareTo(fFechaDB.format(timbrado.getFechaHasta())) <= 0){
                                             cell.setCellValue(timbrado.getNumeroTimbrado());
                                         }
                                             
