@@ -1,4 +1,4 @@
- /*
+/*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
@@ -51,10 +51,10 @@ public class Timbrado {
         this.numeroTimbrado = numeroTimbrado;
         this.fechaDesde = fechaDesde;
         this.fechaHasta = fechaHasta;
-        
-  //      descomponerNumeros();
     }
-   /* 
+
+   
+    /*
     public void descomponerNumeros(){
         prefijoSucursal = Integer.valueOf(numeroDesde.split("-")[0]);
         prefijoPuntoExpedicion = Integer.valueOf(numeroDesde.split("-")[1]);

@@ -23,9 +23,9 @@ public class SQLiteCon {
     public SQLiteCon() {
         conectar();
         crearTabla();
-   
-        
-    //  insertar();
+ 
+       
+  //   insertar();
     }
     
       public Connection conectar(){
@@ -40,7 +40,7 @@ public class SQLiteCon {
                        System.exit(0);
                     }
 
-                    System.out.println("Opened database successfully");
+       //             System.out.println("Opened database successfully");
                       return c;
         
       }
@@ -57,15 +57,17 @@ public class SQLiteCon {
 
                 stmt = c.createStatement();
                 String sql = "CREATE TABLE IF NOT EXISTS TALONARIOS " +
-                                "(tipo_com int , " +
-                                "sucursal VARCHAR(20), "+
-                                "punto_exp VARCHAR(20), " +
-                                "nro_desde INTEGER, " +
-                                "nro_hasta INTEGER, " +
-                                "fecha_des DATE, " +
-                                "fecha_has DATE, " +
-                                "timbrado INTEGER, "
-                        + "FOREIGN KEY (tipo_com) REFERENCES comprobantes(id))";
+                                "(id_tal INTEGER PRIMARY KEY AUTOINCREMENT, "
+                               + "tipo_com INTEGER, " +
+                                "sucursal  INTEGER NOT NULL,  "+
+                                "punto_exp INTEGER NOT NULL, " +
+                                "nro_desde INTEGER NOT NULL, " +
+                                "nro_hasta INTEGER NOT NULL, " +
+                                "fecha_des DATE NOT NULL, " +
+                                "fecha_has DATE NOT NULL, " +
+                                "timbrado INTEGER NOT NULL, " 
+                        + "FOREIGN KEY (tipo_com) REFERENCES COMPROBANTES(id)) ";
+                   
                                 
                 String sqln = "CREATE TABLE IF NOT EXISTS COMPROBANTES (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, descripcion varchar(20));";          
                 stmt.executeUpdate(sqln);
@@ -80,7 +82,8 @@ public class SQLiteCon {
       System.out.println("Table created successfully"); 
       
       }
-        /*
+
+ 
       public void insertar(){
           
       Connection c = null;
@@ -92,9 +95,12 @@ public class SQLiteCon {
                 System.out.println("Opened database successfully");
 
                 stmt = c.createStatement();
-                String sql = "INSERT INTO talonarios VALUES (2, 2,2, 123456,132465, 2020-03-21, 2020-03-22, 12345)";
+                String sql ="INSERT INTO TALONARIOS (tipo_com, sucursal, punto_exp,nro_desde,nro_hasta, fecha_des, fecha_has, timbrado ) VALUES (1,1,1,'262150','280000','2020-01-01','2023-1-01',123456)";
+  //              String sqln ="INSERT INTO COMPROBANTES VALUES(2, 'Nota de Crédito') ";
+                 //       + "INSERT INTO COMPROBANTES VALUES(2, 'Nota de Crédito')";
                                 
              
+ //               stmt.executeUpdate(sqln);
                 stmt.executeUpdate(sql);
            //     hasdata = true;
                  stmt.close();
@@ -105,21 +111,11 @@ public class SQLiteCon {
              }
       System.out.println("RECORDS created successfully"); 
       
-
-    
-}
-  
-*/
-     
-          public static void main(String[] args) {
- 
-
-}
+        }
 }
 
-
-
-      /*
+/*
+      
       if(hasdata){
           
       

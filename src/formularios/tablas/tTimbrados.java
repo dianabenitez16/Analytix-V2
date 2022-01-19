@@ -6,6 +6,7 @@ package formularios.tablas;
 
 import clases.SQLiteCon;
 import clases.Talonario;
+import clases.Timbrado;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.sql.Connection;
@@ -47,13 +48,13 @@ public class tTimbrados extends javax.swing.JInternalFrame {
         String registro[]= new String[9];
         modelo= new DefaultTableModel(null,titulos);
         modelo.setRowCount(0);
-        sSQL="Select * from talonarios";
+        String sql="Select comprobantes.descripcion, sucursal, punto_exp, nro_desde, nro_hasta, fecha_des, fecha_has, timbrado from talonarios inner join comprobantes on talonarios.tipo_com = comprobantes.id";
         try{
             Statement st= cn.createStatement();
-            ResultSet rs= st.executeQuery(sSQL);
+            ResultSet rs= st.executeQuery(sql);
             
             while(rs.next()){
-                registro[0]= rs.getString("tipo_com");
+                registro[0]= rs.getString("descripcion");
                 registro[1]= rs.getString("sucursal");
                 registro[2]= rs.getString("punto_exp");
                 registro[3]= rs.getString("nro_desde");       
@@ -70,7 +71,7 @@ public class tTimbrados extends javax.swing.JInternalFrame {
             return modelo;
         }
         catch(Exception e){
-            JOptionPane.showConfirmDialog(null, e);
+            System.out.println(" ERROR: " + e);
             return null;
             
         }
@@ -383,28 +384,29 @@ public class tTimbrados extends javax.swing.JInternalFrame {
                     System.out.println("Opened database successfully");
 
                     stmt = c.createStatement();
-                    String sql = "INSERT INTO TALONARIOS VALUES(?,?,?,?,?,?,?,?);";
+                    String sql = "INSERT INTO TALONARIOS (tipo_com, sucursal, punto_exp,nro_desde,nro_hasta, fecha_des, fecha_has, timbrado ) VALUES(?,?,?,?,?,?,?,?);";
                     PreparedStatement preparedStmt = c.prepareStatement(sql);
                          //  int seleccionado = cboTC.getSelectedIndex();
-                            
                            preparedStmt.setString(1, cboTC.getSelectedItem().toString());
-                           preparedStmt.setString (2, txtSucursal.getText());
-                           preparedStmt.setString (3, txtPEX.getText());
-                           preparedStmt.setString (4, txtHasta.getText());
-                           preparedStmt.setString (5, txtDesde.getText());
+                           preparedStmt.setInt (2, Integer.parseInt(txtSucursal.getText()));
+                           preparedStmt.setInt (3, Integer.parseInt(txtPEX.getText()));
+                           preparedStmt.setInt (4, Integer.parseInt(txtDesde.getText()));
+                           preparedStmt.setInt (5, Integer.parseInt(txtHasta.getText()));
                            preparedStmt.setString (6, fechaDesde.getText());
                            preparedStmt.setString (7, fechaHasta.getText());
-                           preparedStmt.setString (8, txtTimbrado.getText());
+                           preparedStmt.setInt (8, Integer.parseInt(txtTimbrado.getText()));
 
+                        
                            preparedStmt.execute(); 
                            JOptionPane.showMessageDialog(null, "Registro exitoso!");
                     stmt.executeUpdate(sql);
+                    preparedStmt.close();
                     c.close();
                  } catch ( Exception e ) {
                     System.err.println( e.getClass().getName() + ": " + e.getMessage() );
                     System.exit(0);
                  }
-                 System.out.println("Table created successfully");  // TODO code application logic here
+         //        System.out.println("Table created successfully");  // TODO code application logic here
       // TODO add your handling code here:
     }//GEN-LAST:event_jButton1ActionPerformed
 
