@@ -88,10 +88,11 @@ public class XLibroVenta {
     }
     
     private void cargarTimbrados(){
-        
+        timbrados = new ArrayList<>();
+        int contador = 0;
         SQLiteCon lite = new SQLiteCon();
         lite.conectar();
-        String sql = "select tipo_com, sucursal, punto_exp, nro_desde, nro_hasta, fecha_des, fecha_has, timbrado from talonarios";
+        String sql = "select comprobantes.id, sucursal, punto_exp, nro_desde, nro_hasta, fecha_des, fecha_has, timbrado from talonarios inner join comprobantes on talonarios.tipo_com = comprobantes.id";
        
       try {
              Statement st= lite.conectar().createStatement();
@@ -101,7 +102,7 @@ public class XLibroVenta {
               
               Timbrado timbrado = new Timbrado();
               
-              timbrado.setTipoComprobante(rs.getInt("tipo_com"));
+              timbrado.setTipoComprobante(rs.getInt("id"));
               timbrado.setPrefijoSucursal(rs.getInt("sucursal"));
               timbrado.setPrefijoPuntoExpedicion(rs.getInt("punto_exp"));
               timbrado.setNumeroFacturaDesde(rs.getInt("nro_desde"));
@@ -110,10 +111,12 @@ public class XLibroVenta {
               timbrado.setFechaHasta(fFechaDB.parse(rs.getString("fecha_has")));
               timbrado.setNumeroTimbrado(rs.getInt("timbrado"));
               
-              timbrados = new ArrayList<>();
+                 
               timbrados.add(timbrado);
               
-      
+              contador++;
+              
+                 System.out.println("CONTADOR " + contador);
              }
       } catch (SQLException ex) {
           Logger.getLogger(XLibroVenta.class.getName()).log(Level.SEVERE, null, ex);
@@ -279,7 +282,7 @@ public class XLibroVenta {
                                 switch((Integer) campo){
                                     case 67:
                                     case 77:    
-                                        comprobanteTipo = "Nota de crédito";
+                                        comprobanteTipo = "Nota de Crédito"; //RECORDAR SIEMPRE CAMBIAR LOS NOMBRES DE COMPROBANTES DE MODO A QUE EL ANALYTIX ACEPTE EJ: ES "Nota de Crédito" no "Nota de crédito"
                                         factura.setTipoComprobante(3);
                                         break;
                                     case 70:
@@ -337,7 +340,7 @@ public class XLibroVenta {
                                 }
                                 break;
                             case "forma_devo": // VERIFICA ANULACION
-                                if(comprobanteTipo.equals("Nota de crédito")){
+                                if(comprobanteTipo.equals("Nota de Crédito")){
                                     cell.setCellValue(1);
                                 }else{
                                     cell.setCellValue(0);
@@ -345,64 +348,67 @@ public class XLibroVenta {
                                 break;
                             case "anular": // VERIFICA ANULACION
                                 if((Integer) campo == 0){
-                                    cell.setCellValue((Integer) 0);
+                                   cell.setCellValue((Integer) 0);
                                 }else{
                                     cell.getRow().getCell(12).setCellValue("Anulado");
                                     cell.setCellValue((Integer) 1);
+              //                      cell.getRow().getCell(46).setCellValue("");
                                 }
                                 break;
                             case "timbrado":
-                                //System.out.print("NRO:"+cell.getRow().getCell(8).getStringCellValue());
-                                //System.out.print("\tTIPO:"+cell.getRow().getCell(17).getStringCellValue());
-                                //System.out.println("\tFECHA:"+cell.getRow().getCell(18).getStringCellValue());
-                        
-                                for (Timbrado timbrado : timbrados) {
+                                 
+                                for (Timbrado timbrados : timbrados) {
+                                  
+                                  if(
+                                            factura.getTipoComprobante() == timbrados.getTipoComprobante() &&
+                                            factura.getTalonario().getSucursal() == timbrados.getPrefijoSucursal() &&
+                                            factura.getTalonario().getPuntoExpedicion() == timbrados.getPrefijoPuntoExpedicion() &&
+                                            factura.getNumero() >= timbrados.getNumeroFacturaDesde() &&
+                                            factura.getNumero() <= timbrados.getNumeroFacturaHasta()
+                                            ){
+                                        if(fFechaDB.format(factura.getFecha()).compareTo(fFechaDB.format(timbrados.getFechaDesde())) >= 0 && fFechaDB.format(factura.getFecha()).compareTo(fFechaDB.format(timbrados.getFechaHasta())) <= 0){
+                                            
+                                        cell.setCellValue(timbrados.getNumeroTimbrado());
+                                        
+                                    }
+                                          
+                                }
+                                /*
                                     System.out.println(" \nFACTURA COMPROBANTE " + factura.getTipoComprobante());
                                     System.out.println(" FACTURA PUNTO_EXP " + factura.getTalonario().getPuntoExpedicion());
                                     System.out.println(" FACTURA SUCURSAL " + factura.getTalonario().getSucursal());
                                     System.out.println(" FACTURA NUMERO " + factura.getNumero());
                                     System.out.println(" FACTURA FECHA " + factura.getFecha());
                                     
-                                    System.out.println(" \nTALONARIO COMPROBANTE " + timbrado.getTipoComprobante());
-                                    System.out.println(" TALONARIO PUNTO_EXP " + timbrado.getPrefijoSucursal());
-                                    System.out.println(" TALONARIO SUCURSAL " + timbrado.getPrefijoSucursal());
-                                    System.out.println(" TALONARIO NUMERO " + timbrado.getNumeroFacturaDesde());
-                                    System.out.println(" TALONARIO FECHA " + timbrado.getFechaDesde());
-                                    System.out.println(" TIMBRADO " + timbrado.getNumeroTimbrado());
+                                    System.out.println(" \nTALONARIO COMPROBANTE " + timbrados.getTipoComprobante());
+                                    System.out.println(" TALONARIO PUNTO_EXP " + timbrados.getPrefijoSucursal());
+                                    System.out.println(" TALONARIO SUCURSAL " + timbrados.getPrefijoSucursal());
+                                    System.out.println(" TALONARIO DESDE " + timbrados.getNumeroFacturaDesde());
+                                    System.out.println(" TALONARIO HASTA " + timbrados.getNumeroFacturaHasta());
+                                    System.out.println(" TALONARIO FECHA " + timbrados.getFechaDesde());
                                     
-                                 
-                                    if(
-                                            factura.getTipoComprobante() == timbrado.getTipoComprobante() &&
-                                            factura.getTalonario().getSucursal() == timbrado.getPrefijoSucursal() &&
-                                            factura.getTalonario().getPuntoExpedicion() == timbrado.getPrefijoPuntoExpedicion() &&
-                                            factura.getNumero() >= timbrado.getNumeroFacturaDesde() &&
-                                            factura.getNumero() <= timbrado.getNumeroFacturaHasta()
-                                            ){
-                                        if(fFechaDB.format(factura.getFecha()).compareTo(fFechaDB.format(timbrado.getFechaDesde())) >= 0 && fFechaDB.format(factura.getFecha()).compareTo(fFechaDB.format(timbrado.getFechaHasta())) <= 0){
-                                            
-                                        cell.setCellValue(timbrado.getNumeroTimbrado());
-                                        
-                                    }
-                                          
-                                }
-                                
+                                    
+                                    System.out.println(" TIMBRADO " + timbrados.getNumeroTimbrado());
+                                    */
                                 }
                                 
                                 break;
-                            case "usu_ide":
+                                
+                                
+                             case "usu_ide":
                                 // EN LA ULTIMA COLUMNA, VERIFICAMOS SI ES EXENTA, ENTONCES INSERTAMOS NUMERO DE CUENTA ENXENTA.
-                                if(cell.getRow().getCell(21).getNumericCellValue() == 0){
+                                if(cell.getRow().getCell(20).getNumericCellValue() > 0){
                                     cell.getRow().getCell(46).setCellValue(configuracion.getProperty("cuentaventasexe")); // OJO AGREGA EN UNA COLUMNA DISTINTA A LA DE GRAVADA
                                     cell.getRow().getCell(14).setCellValue("77777701-0"); 
                                     cell.getRow().getCell(16).setCellValue("AGENTES DIPLOMATICOS"); 
-                                }       
-                                
+                                }   
+                              
                                 if(Arrays.asList(importesconsolidados).contains(cell.getRow().getCell(14).getStringCellValue().trim())){
                                     cell.getRow().getCell(14).setCellValue("44444401-7"); 
                                     cell.getRow().getCell(16).setCellValue("IMPORTES CONSOLIDADOS"); 
                                 }
                                 break;
-                            /*
+                                
                             // SE DA DE BAJA PORQUE YA NO ESTA OPERATIVO
                             case "Prefijo":
                             case "MinNumero":
@@ -410,7 +416,7 @@ public class XLibroVenta {
                                 System.out.println("CELDA: \t"+encabezados.get(colNum -1)+"\t"+cell.getColumnIndex());
                                 row.removeCell(cell);
                                 break;
-                            */
+                         
                             case "last_col":
                                 // VERIFICAMOS EL RUC, SI SE TRATA DE UN CLIENTE REGISTRADO O UN CLIENTE TEMPORAL
                                 if(cell.getRow().getCell(14).getStringCellValue().isEmpty() && !cell.getRow().getCell(53).getStringCellValue().isEmpty()){

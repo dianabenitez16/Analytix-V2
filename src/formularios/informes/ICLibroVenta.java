@@ -137,10 +137,10 @@ public class ICLibroVenta extends javax.swing.JInternalFrame implements java.bea
                 + "mov_vto as ven_fecven, 0 as cant_dias, "
                 + "'LI' as origen, 0 as cambio, mov_can as valor, '' as moneda, 0 as exen_dolar, '' as concepto, '' as cta_iva, '' as cta_caja, "
                 + "0 as tkdesde, 0 as tkhasta, mov_caj as caja, '' as ven_disgra, 1 as forma_devo, "
-                + "'' as ven_cuense, mov_anu as anular, '' as reproceso, '' as cuenta_exe, '' as usu_ide, '1' as timbrado, '2' as clieasi, '3' as ventirptip, '4' as ventirpgra, '5' as ventirpexe, tmp_cui, tmp_nom, 'last_col' as last_col "
+                + "'' as ven_cuense, mov_anu as anular, '' as reproceso, '' as cuenta_exe, '' as usu_ide, '' as timbrado, '' as clieasi, '' as ventirptip, '' as ventirpgra, '' as ventirpexe, tmp_cui, tmp_nom, 'last_col' as last_col "
                 + " "
                 + "FROM COMPROBANTES_VENTAS_ENCABEZADOS INNER JOIN TALONARIOS ON mov_tal = nro_nro LEFT OUTER JOIN CLIENTES ON mov_cli = cli_cod LEFT OUTER JOIN CLIENTES_OCASIONALES ON mov_tmp = tmp_cod "
-                + "WHERE mov_tip <> 80 AND mov_tip <> 88 AND nro_nro IN ("+talonariosfactura+","+talonariosncr+","+talonariosrecibo+") " ;
+                + "WHERE mov_tip <> 80 AND mov_tip <> 88  AND nro_nro IN ("+talonariosfactura+","+talonariosncr+","+talonariosrecibo+") " ;
         }
         
         // DOCUMENTACION: https://docs.faircom.com/doc/sqlref/
@@ -282,8 +282,7 @@ public class ICLibroVenta extends javax.swing.JInternalFrame implements java.bea
 
         pMenu.setPreferredSize(new java.awt.Dimension(0, 20));
 
-        mBuscar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/ico/Search.png"))); // NOI18N
-        mBuscar.setOpaque(false);
+        mBuscar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/ico/search.png"))); // NOI18N
         mBuscar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mBuscarActionPerformed(evt);
@@ -291,7 +290,6 @@ public class ICLibroVenta extends javax.swing.JInternalFrame implements java.bea
         });
 
         mLimpiar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/ico/clear.png"))); // NOI18N
-        mLimpiar.setOpaque(false);
         mLimpiar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mLimpiarActionPerformed(evt);
@@ -299,7 +297,6 @@ public class ICLibroVenta extends javax.swing.JInternalFrame implements java.bea
         });
 
         mAyuda.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/ico/help.png"))); // NOI18N
-        mAyuda.setOpaque(false);
         mAyuda.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mAyudaActionPerformed(evt);
@@ -503,13 +500,7 @@ public class ICLibroVenta extends javax.swing.JInternalFrame implements java.bea
                     bBuscar.setEnabled(true);
                 }
                 break;
-            case "Consolidado":
-                if(value.equals("STARTED")){
-                    bBuscar.setEnabled(false);
-                }else{
-                    bBuscar.setEnabled(true);
-                }
-                break;
-        }
+  
+}
     }
 }
